@@ -2,7 +2,7 @@
 # Dockerfile for shadowsocks-libev
 #
 
-FROM alpine:3.10
+FROM alpine:3.12
 MAINTAINER EasyPi Software Foundation
 
 ARG SS_VER
@@ -31,17 +31,11 @@ RUN set -ex \
                              openssl-dev \
                              pcre-dev \
                              tar \
-    && curl -sSL $SS_URL | tar xz \
-    && cd $SS_DIR \
-        && curl -sSL https://github.com/shadowsocks/ipset/archive/shadowsocks.tar.gz | tar xz --strip 1 -C libipset \
-        && curl -sSL https://github.com/shadowsocks/libcork/archive/shadowsocks.tar.gz | tar xz --strip 1 -C libcork \
-        && curl -sSL https://github.com/shadowsocks/libbloom/archive/master.tar.gz | tar xz --strip 1 -C libbloom \
-        && ./autogen.sh \
-        && ./configure --disable-documentation \
-        && make install \
-        && cd .. \
-        && rm -rf $SS_DIR \
-    && apk del TMP
+                             sudo
+#    && apk del TMP
+
+COPY build-ss-libev.sh /root/
+RUN /root/build-ss-libev.sh
 
 ENV SERVER_ADDR 0.0.0.0
 ENV SERVER_PORT 8388
