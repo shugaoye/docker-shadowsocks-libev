@@ -42,6 +42,7 @@ echo "root ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
 #cp /root/bashrc /home/$USERNAME/.bashrc
 #chown $USERNAME:$GROUPNAME /home/$USERNAME/.bashrc
 
+/root/entry.sh
 # Default to 'bash' if no arguments are provided
 args="$@"
 if [ -z "$args" ]; then
@@ -51,4 +52,7 @@ fi
 msg="docker_entrypoint: args=$args and User:$USERNAME" && echo $msg
 # Execute command as the default user
 export HOME=/home/$USERNAME
+cp /root/.bashrc $HOME/.bashrc
+chown $USERNAME:$GROUPNAME $HOME/.bashrc
+sudo usermod -p '' $USERNAME
 exec sudo -E -u $USERNAME $args
