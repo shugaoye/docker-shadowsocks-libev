@@ -39,8 +39,8 @@ fi
 echo "$msg - done"
 
 # Enable sudo
-echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
-echo "root ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+#echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+#echo "root ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
 
 # msg="docker_entrypoint: Creating /tmp/ccache and /$USERNAME directory" && echo $msg
 # mkdir -p /tmp/ccache /$USERNAME
@@ -64,6 +64,9 @@ if [ ${USER_ID} -ne ${ROOT_ID} ]; then
   cp /root/.bashrc $HOME/.bashrc
   chown $USERNAME:$GROUPNAME $HOME/.bashrc
   sudo usermod -p '' $USERNAME
+  exec sudo -E -u $USERNAME $args
+else
+  echo executing command: $args
+  $args
 fi
 
-exec sudo -E -u $USERNAME $args

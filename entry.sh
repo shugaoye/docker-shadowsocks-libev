@@ -102,6 +102,7 @@ if [ -n "${SSH_USERS}" ]; then
         fi
         getent group ${_NAME} >/dev/null 2>&1 || groupadd -g ${_GID} ${_NAME}
         getent passwd ${_NAME} >/dev/null 2>&1 || useradd -r -m -p '' -u ${_UID} -g ${_GID} -s ${_SHELL:-""} -c 'SSHD User' ${_NAME}
+        echo "${_NAME} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
     done
 else
     # Warn if no authorized_keys
