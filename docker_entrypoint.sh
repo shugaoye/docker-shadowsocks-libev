@@ -13,20 +13,28 @@ set -e
 #  docker run -ti -e USER_ID=$(id -u) -e GROUP_ID=$(id -g) imagename bash
 #
 
+ROOT_ID=0
+SYS_ID=999
+
 # Reasonable defaults if no USER_ID/GROUP_ID environment variables are set.
 if [ -z ${USER_ID+x} ]; then USER_ID=1000; fi
 if [ -z ${GROUP_ID+x} ]; then GROUP_ID=1000; fi
-if [ -z ${USERNAME+x} ]; then USERNAME=mono; fi
-if [ -z ${GROUPNAME+x} ]; then GROUPNAME=mono; fi
+if [ -z ${USERNAME+x} ]; then USERNAME=user_ss; fi
+if [ -z ${GROUPNAME+x} ]; then GROUPNAME=group_ss; fi
 
 # ccache
 export CCACHE_DIR=/tmp/ccache
 export USE_CCACHE=1
 
 msg="docker_entrypoint: Creating user UID/GID [$USER_ID/$GROUP_ID]" && echo $msg
-# mkdir -p /home/$USERNAME
-addgroup -g $GROUP_ID $USERNAME
-adduser -D -h /home/$USERNAME -u $USER_ID -G $GROUPNAME $USERNAME
+if [ ${GROUP_ID} -ge ${SYS_ID} ]; then
+  addgroup -g $GROUP_ID $GROUPNAME
+fi
+
+if [ ${USER_ID} -ge ${SYS_ID} ]; then
+  adduser -D -h /home/$USERNAME -u $USER_ID -G $GROUPNAME $USERNAME
+fi
+
 # chown $USER_ID:$GROUP_ID /home/$USERNAME
 echo "$msg - done"
 
@@ -51,8 +59,11 @@ fi
 
 msg="docker_entrypoint: args=$args and User:$USERNAME" && echo $msg
 # Execute command as the default user
-export HOME=/home/$USERNAME
-cp /root/.bashrc $HOME/.bashrc
-chown $USERNAME:$GROUPNAME $HOME/.bashrc
-sudo usermod -p '' $USERNAME
+if [ ${USER_ID} -ne ${ROOT_ID} ]; then
+  export HOME=/home/$USERNAME
+  cp /root/.bashrc $HOME/.bashrc
+  chown $USERNAME:$GROUPNAME $HOME/.bashrc
+  sudo usermod -p '' $USERNAME
+fi
+
 exec sudo -E -u $USERNAME $args
